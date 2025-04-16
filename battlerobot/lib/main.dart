@@ -357,9 +357,12 @@ class _CustomizeState extends State<Customize> {
   }
 }
 
+
 class _CombatPageState extends State<CombatPage> {
   List<String> logCombat = [];
   bool combatTermine = false;
+
+  final ScrollController _scrollController = ScrollController(); // Ajout du contrôleur
 
   @override
   void initState() {
@@ -372,6 +375,9 @@ class _CombatPageState extends State<CombatPage> {
     logCombat.add("${widget.robotJoueur.getNom()} (PV: ${widget.robotJoueur.getSante()})");
     logCombat.add("VS");
     logCombat.add("${widget.robotEnnemi.getNom()} (PV: ${widget.robotEnnemi.getSante()})");
+
+    // Scroll automatique en bas
+    _scrollToBottom();
   }
 
   void _attaque() {
@@ -387,6 +393,7 @@ class _CombatPageState extends State<CombatPage> {
       if (widget.robotEnnemi.getSante() <= 0) {
         logCombat.add("${widget.robotEnnemi.getNom()} est détruit !");
         combatTermine = true;
+        _scrollToBottom(); // Défilement
         return;
       }
 
@@ -399,6 +406,17 @@ class _CombatPageState extends State<CombatPage> {
       if (widget.robotJoueur.getSante() <= 0) {
         logCombat.add("${widget.robotJoueur.getNom()} est détruit !");
         combatTermine = true;
+      }
+
+      // Scroll automatique en bas
+      _scrollToBottom();
+    });
+  }
+
+  void _scrollToBottom() {
+    Future.delayed(Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       }
     });
   }
@@ -417,17 +435,22 @@ class _CombatPageState extends State<CombatPage> {
               _buildRobotStats(widget.robotEnnemi),
             ],
           ),
-          
-          // Log de combat
+
+          // Log de combat avec Scrollbar
           Expanded(
-            child: ListView.builder(
-              itemCount: logCombat.length,
-              itemBuilder: (context, index) => ListTile(
-                title: Text(logCombat[index]),
+            child: Scrollbar(
+              controller: _scrollController, // Liaison avec le ScrollController
+              thumbVisibility: true, // Optionnel
+              child: ListView.builder(
+                controller: _scrollController, // Utilisation du ScrollController
+                itemCount: logCombat.length,
+                itemBuilder: (context, index) => ListTile(
+                  title: Text(logCombat[index]),
+                ),
               ),
             ),
           ),
-          
+
           // Bouton d'attaque
           ElevatedButton(
             onPressed: combatTermine ? null : _attaque,
@@ -436,6 +459,12 @@ class _CombatPageState extends State<CombatPage> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose(); // Nettoyage
+    super.dispose();
   }
 
   Widget _buildRobotStats(Robot robot) {
@@ -449,6 +478,7 @@ class _CombatPageState extends State<CombatPage> {
     );
   }
 }
+
 
 class CombatPage extends StatefulWidget {
   final Robot robotJoueur;
@@ -623,4 +653,4 @@ class Arena {
       print("${robot2.getNom()} est mort!");
     }
   }
-}
+} 
