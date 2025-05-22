@@ -362,7 +362,8 @@ class _CombatPageState extends State<CombatPage> {
   List<String> logCombat = [];
   bool combatTermine = false;
 
-  final ScrollController _scrollController = ScrollController(); // Ajout du contrôleur
+  final ScrollController _scrollController = ScrollController(); 
+  // Ajout du contrôleur
 
   @override
   void initState() {
